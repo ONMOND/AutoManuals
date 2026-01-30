@@ -1,0 +1,8 @@
+playwright
+openai-whisper
+sounddevice
+soundfile
+numpy
+jinja2
+weasyprint
+nest_asyncio
