@@ -42,8 +42,15 @@ async def main():
     except KeyboardInterrupt:
         print("\n--- Stopping Recording (KeyboardInterrupt) ---")
     finally:
-        await browser_recorder.stop()
-        audio_recorder.stop()
+        try:
+            await browser_recorder.stop()
+        except Exception as e:
+            print(f"Warning during browser shutdown: {e}")
+            
+        try:
+            audio_recorder.stop()
+        except Exception as e:
+            print(f"Warning during audio shutdown: {e}")
 
     print(f"Captured {len(recorded_events)} browser events.")
     

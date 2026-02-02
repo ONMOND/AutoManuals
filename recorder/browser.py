@@ -39,12 +39,15 @@ class BrowserRecorder:
     async def stop(self):
         """Stops the browser and cleanup."""
         self.is_recording = False
-        if self.context:
-            await self.context.close()
-        if self.browser:
-            await self.browser.close()
-        if self.playwright:
-            await self.playwright.stop()
+        try:
+            if self.context:
+                await self.context.close()
+            if self.browser:
+                await self.browser.close()
+            if self.playwright:
+                await self.playwright.stop()
+        except Exception as e:
+            print(f"Ignored error during browser stop: {e}")
         print("Browser recorder stopped.")
 
     async def _inject_monitoring_scripts(self):
