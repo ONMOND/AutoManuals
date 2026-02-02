@@ -1,17 +1,19 @@
 import asyncio
 import time
 import json
+import os
 from playwright.async_api import async_playwright, Page
 from typing import Callable, Awaitable
 
 class BrowserRecorder:
-    def __init__(self, event_callback: Callable[[dict], Awaitable[None]]):
+    def __init__(self, event_callback: Callable[[dict], Awaitable[None]], output_dir="."):
         self.playwright = None
         self.browser = None
         self.context = None
         self.page = None
         self.event_callback = event_callback
         self.is_recording = False
+        self.output_dir = output_dir
 
     @property
     def is_open(self):
@@ -93,7 +95,9 @@ class BrowserRecorder:
         if event_data['type'] == 'click':
              # Generate unique filename
             timestamp = int(time.time() * 1000)
-            screenshot_path = f"screenshot_{timestamp}.png"
+            screenshot_filename = f"screenshot_{timestamp}.png"
+            screenshot_path = os.path.join(self.output_dir, screenshot_filename)
+            
             # We capture the page state
             await self.page.screenshot(path=screenshot_path)
             event_data['screenshot'] = screenshot_path
@@ -111,7 +115,9 @@ class BrowserRecorder:
                 return
 
             timestamp = int(time.time() * 1000)
-            screenshot_path = f"screenshot_nav_{timestamp}.png"
+            screenshot_filename = f"screenshot_nav_{timestamp}.png"
+            screenshot_path = os.path.join(self.output_dir, screenshot_filename)
+
             await self.page.screenshot(path=screenshot_path)
 
             event_data = {

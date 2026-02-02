@@ -9,6 +9,15 @@ from reporting.generator import ReportGenerator
 
 async def main():
     print("Initializing AutoDocs...")
+
+    # Determine Output Directory
+    project_name = input("Enter project name (default: timestamp): ").strip()
+    if not project_name:
+        project_name = f"auto_docs_{int(time.time())}"
+    
+    output_dir = os.path.join("output", project_name)
+    os.makedirs(output_dir, exist_ok=True)
+    print(f"Project Output Directory: {output_dir}")
     
     # Store events here
     recorded_events = []
@@ -18,8 +27,9 @@ async def main():
         recorded_events.append(event)
 
     # Initialize components
-    browser_recorder = BrowserRecorder(event_callback)
-    audio_recorder = AudioRecorder("recording.wav")
+    browser_recorder = BrowserRecorder(event_callback, output_dir=output_dir)
+    audio_path = os.path.join(output_dir, "recording.wav")
+    audio_recorder = AudioRecorder(audio_path)
     
     try:
         # Start recording
@@ -54,7 +64,7 @@ async def main():
 
     print(f"Captured {len(recorded_events)} browser events.")
     
-    if not os.path.exists("recording.wav"):
+    if not os.path.exists(audio_path):
         print("No audio recorded. Exiting.")
         return
 
@@ -63,7 +73,7 @@ async def main():
     
     # 1. Transcribe
     transcriber = AudioTranscriber(model_size="base")
-    segments = transcriber.transcribe("recording.wav")
+    segments = transcriber.transcribe(audio_path)
     print(f"Transcribed {len(segments)} audio segments.")
 
     # 2. Normalize timestamps
@@ -83,7 +93,7 @@ async def main():
     # 4. Generate Report
     print("\n--- Generating Report ---")
     generator = ReportGenerator()
-    html_path, pdf_path = generator.generate(steps)
+    html_path, pdf_path = generator.generate(steps, output_dir=output_dir)
     
     print("\n--- Done ---")
     print(f"Open {html_path} to view the process.")
